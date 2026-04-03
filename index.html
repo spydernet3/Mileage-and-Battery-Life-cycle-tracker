@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    :root { --glass: rgba(255, 255, 255, 0.2); --border: rgba(255, 255, 255, 0.3); }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0; padding: 20px;
+      background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+      background-attachment: fixed;
+      min-height: 100vh; color: #1d1d1f;
+    }
+    h2 { text-align: center; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 25px; }
+    
+    .nav { display: flex; gap: 10px; justify-content: center; margin-bottom: 25px; }
+    .nav button { 
+      padding: 10px 18px; border: 1px solid var(--border); 
+      background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+      border-radius: 12px; cursor: pointer; font-weight: 500; color: #007aff;
+      transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .nav button:hover { background: rgba(255, 255, 255, 0.4); transform: translateY(-2px); }
+
+    .section { 
+      display: none; background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+      padding: 25px; border-radius: 24px; border: 1px solid var(--border);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15); max-width: 650px; margin: 0 auto;
+    }
+    .active { display: block; animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    label { display: block; margin-top: 15px; font-size: 13px; font-weight: 600; color: #4b4b4d; padding-left: 5px; }
+    input, select { 
+      width: 100%; padding: 12px; margin-top: 6px; border: 1px solid var(--border); 
+      background: rgba(255, 255, 255, 0.5); border-radius: 12px; box-sizing: border-box; 
+      font-size: 16px; outline: none;
+    }
+    .submit-btn { 
+      background: #007aff; color: white; margin-top: 25px; width: 100%; 
+      padding: 14px; border: none; border-radius: 14px; font-weight: 600; cursor: pointer;
+    }
+    
+    .dash-card { 
+      background: rgba(255, 255, 255, 0.4); border-radius: 18px; padding: 15px; 
+      margin-bottom: 15px; border: 1px solid var(--border);
+    }
+    .dash-card h3 { margin: 0 0 10px 0; font-size: 15px; color: #1d1d1f; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+    .dash-card p { margin: 5px 0; font-size: 14px; }
+
+    .table-cont { overflow-x: auto; margin-top: 20px; border-radius: 16px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; background: rgba(255, 255, 255, 0.2); }
+    th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: rgba(255, 255, 255, 0.3); color: #1d1d1f; font-weight: 600; }
+    .btn-del { background: rgba(255, 59, 48, 0.15); color: #ff3b30; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    #load { text-align: center; font-weight: 500; color: #555; }
+  </style>
+</head>
+<body>
+  <h2>Vehicle & Battery Health Monitor</h2>
+  <div class="nav">
+    <button onclick="show('mForm')">ADD MILEAGE RECORDS</button>
+    <button onclick="show('bForm')">ADD BATTERY CHARGE RECORDS</button>
+    <button onclick="show('dash'); load();">DASHBOARD</button>
+  </div>
+
+  <div id="mForm" class="section active">
+    <h3>Mileage Entry</h3>
+    <form onsubmit="saveM(event)">
+      <label>Date</label><input type="date" id="md" required>
+      <label>Last Mil.</label><input type="number" step="0.01" id="mlm" required>
+      <label>KM Driven</label><input type="number" id="mkm" required>
+      <label>Petrol Ltr</label><input type="number" step="0.01" id="mpl" required>
+      <label>Bunk</label><select id="mbk"><option>HP</option><option>Indane Oil</option><option>Bharat Petroleum</option><option>Jio</option><option>Other</option></select>
+      <label>Density</label><input type="number" step="0.1" id="mde" required>
+      <label>Mode</label>
+      <select id="mmo">
+        <option value="City">City</option>
+        <option value="Urban">Urban</option>
+        <option value="Highways">Highways</option>
+        <option value="City + Highways">City + Highways</option>
+      </select>
+      <button type="submit" class="submit-btn">Save Entry</button>
+    </form>
+  </div>
+
+  <div id="bForm" class="section">
+    <h3>Battery Entry</h3>
+    <form onsubmit="saveB(event)">
+      <label>Date</label><input type="date" id="bd" required>
+      <label>In Time</label><input type="time" id="bit" required>
+      <label>Out Time</label><input type="time" id="bot" required>
+      <label>In %</label><input type="number" id="bic" required>
+      <label>Out %</label><input type="number" id="boc" required>
+      <button type="submit" class="submit-btn">Save Entry</button>
+    </form>
+  </div>
+
+  <div id="dash" class="section" style="max-width: 900px;">
+    <div id="load">Loading...</div>
+    <div id="cont" style="display:none;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div class="dash-card">
+          <h3>🚗 Mileage</h3>
+          <p><b>Date:</b> <span id="dd"></span></p>
+          <p><b>Stat:</b> <span id="dm"></span> km/l (<span id="db"></span>)</p>
+        </div>
+        <div class="dash-card">
+          <h3>🔋 Battery</h3>
+          <p><b>Last:</b> <span id="dbc"></span></p>
+          <p><b>Stat:</b> <span id="dc"></span> cyc | <span id="du"></span></p>
+        </div>
+      </div>
+      
+      <div class="table-cont">
+        <table id="tm">
+          <thead><tr><th>Date</th><th>Mil.</th><th>KM</th><th>Ltr</th><th>Bunk</th><th>Dens</th><th>Mode</th><th>Action</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="table-cont">
+        <table id="tb">
+          <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Diff</th><th>In%</th><th>Out%</th><th>Action</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function show(id){ document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    function saveM(e){ e.preventDefault(); google.script.run.withSuccessHandler(()=>{alert('Saved');e.target.reset();}).saveMileage({date:gv('md'),lastMileage:gv('mlm'),kmDriven:gv('mkm'),petrolLtr:gv('mpl'),bunkName:gv('mbk'),density:gv('mde'),drivenMode:gv('mmo')}); }
+    function saveB(e){ e.preventDefault(); google.script.run.withSuccessHandler(()=>{alert('Saved');e.target.reset();}).saveBattery({date:gv('bd'),plugInTime:gv('bit'),plugOutTime:gv('bot'),plugInCharge:gv('bic'),plugOutCharge:gv('boc')}); }
+    function gv(id){ return document.getElementById(id).value; }
+    function del(s,i){ if(confirm('Delete?')) google.script.run.withSuccessHandler(()=>load()).deleteRecord(s,i); }
+    function load(){
+      document.getElementById('load').style.display='block'; document.getElementById('cont').style.display='none';
+      google.script.run.withSuccessHandler(m=>{
+        document.getElementById('dd').innerText=m.lastMileageDate; document.getElementById('dm').innerText=m.lastMileage; document.getElementById('db').innerText=m.bunkName;
+        document.getElementById('dbc').innerText=m.lastChargeDate; document.getElementById('dc').innerText=m.cyclesCompleted; document.getElementById('du').innerText=m.lastUsageDays;
+        document.querySelector('#tm tbody').innerHTML = m.mileageEntries.map((r,i)=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}<td><button class="btn-del" onclick="del('Mileage',${i+2})">✕</button></td></tr>`).join('');
+        document.querySelector('#tb tbody').innerHTML = m.batteryEntries.map((r,i)=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}<td><button class="btn-del" onclick="del('Battery',${i+2})">✕</button></td></tr>`).join('');
+        document.getElementById('load').style.display='none'; document.getElementById('cont').style.display='block';
+      }).getDashboardData();
+    }
+  </script>
+</body>
+</html>
